@@ -1,6 +1,19 @@
 (executable
- (name main)
- (libraries core)
- (preprocess (pps ppx_jane))
- (flags (:standard -w -34))
+  (name main)
+  (libraries core curses)
+  (preprocess (pps ppx_jane
+    -allow-unannotated-ignores
+    ))
 )
+
+(env
+  (dev
+    (flags (:standard
+            -w -20
+            -w -27
+            -w -32
+            -w -34
+            -w -37
+            -w -39)))
+  (release
+   (flags (:standard))))
