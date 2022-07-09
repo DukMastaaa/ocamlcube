@@ -13,7 +13,7 @@ type t =
 (** Alias of Cons *)
 val ( ^ ) : t -> t -> t
 
-val init : unit -> unit
+val init : unit -> bool
 
 val raw_curses : Curses.window -> int -> string -> unit
 

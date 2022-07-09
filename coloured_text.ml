@@ -16,8 +16,9 @@ let ( ^ ) s1 s2 = Cons (s1, s2)
 
 let init () =
   let colours = Curses.Color.[black; red; green; yellow; blue; magenta; cyan; white] in
-  List.iteri colours ~f:(fun index colour ->
-    Curses.init_pair (index + 1) colour (-1) |> ignore)
+  List.mapi colours ~f:(fun index colour ->
+    Curses.init_pair (index + 1) colour (-1))
+  |> List.reduce_exn ~f:( && )
 
 let raw_curses win (colour_code : int) text =
   let pair_num = Curses.A.color_pair colour_code in
