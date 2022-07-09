@@ -15,7 +15,5 @@ val ( ^ ) : t -> t -> t
 
 val init : unit -> bool
 
-val raw_curses : Curses.window -> int -> string -> unit
-
 (** Prints out the coloured string on the given window *)
-val waddcstr : Curses.window -> t -> unit
+val waddcstr : Curses.window -> t -> bool

@@ -23,12 +23,13 @@ let init () =
 let raw_curses win (colour_code : int) text =
   let pair_num = Curses.A.color_pair colour_code in
   Curses.wattron win pair_num;
-  Curses.waddstr win text |> ignore;
-  Curses.wattroff win pair_num
+  let status = Curses.waddstr win text in
+  Curses.wattroff win pair_num;
+  status
 
 let rec waddcstr win cstr =
   match cstr with
-    | Cons (cs1, cs2) -> waddcstr win cs1; waddcstr win cs2
+    | Cons (cs1, cs2) -> (waddcstr win cs1) && (waddcstr win cs2)
     | Black s -> raw_curses win 1 s
     | Red s -> raw_curses win 2 s
     | Green s -> raw_curses win 3 s

@@ -1,11 +1,6 @@
 open! Core
 open! Curses
 
-let curses_init () =
-  if (Curses.use_default_colors ()) && (Curses.start_color ())
-    then Coloured_text.init ();
-  stdscr
-
 let setup () =
   let stdscr = Curses.initscr () in
   if not (Curses.has_colors () && Curses.can_change_color ())
@@ -20,14 +15,14 @@ let main stdscr =
   stdscr |> ignore;
   let win = Window.create ~height:8 ~width:25 ~pos:{Position2.y=3; x=15} in
 
-  Window.draw_title win "beans";
+  Window.draw_title win "beans" |> ignore;
   let cstr = Coloured_text.(
     (White "white ") ^ (Red "red ") ^ (Green "green ") ^ (Yellow "yellow ")
     ^ (Blue "blue ") ^ (Magenta "magenta ") ^ (Cyan "cyan ")
   ) in
-  Window.waddcstr win cstr;
+  Window.waddcstr win cstr |> ignore;
 
-  Window.wrefresh win;
+  Window.wrefresh win |> ignore;
   Window.wgetch win |> ignore;
   Result.Ok ()
 
