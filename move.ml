@@ -1,5 +1,4 @@
 open! Core
-open Angstrom
 
 type action = 
   | Up
@@ -16,6 +15,8 @@ type action =
   | RotZ
 
 module Lexical_analysis = struct
+  open Angstrom
+
   (** the ints are the actual ints written, 1-indexed *)
   type depth =
     | BlankDepth
@@ -91,6 +92,64 @@ module Lexical_analysis = struct
       (parse_depth) (parse_action_and_wide) (parse_repeat) (parse_inverse)
 end
 
-(* 
-  2-3Rw2'
-*)
+(** layers are 0-indexed *)
+type depth = Range of int * int
+
+type move = {
+  depth   : depth;
+  action  : action;
+  repeat  : int;
+  inverse : bool;
+}
+
+module Semantic_analysis = struct
+
+  (** the Result module doesn't have this ._. *)
+  let ( let* ) o f = Result.(>>=) o f
+
+  let wide_allowed = function
+    | Up | Front | Right | Back | Left | Down -> true
+    | _ -> false
+
+  let depth_is_blank = function
+    | Lexical_analysis.BlankDepth -> true
+    | _ -> false
+
+  let depth_is_range = function
+    | Lexical_analysis.Range _ -> true
+    | _ -> false
+
+  let get_repeat_number = function
+    | Lexical_analysis.BlankRepeat -> Result.Ok 0
+    | Number 0 -> Result.Error "invalid repeat 0"
+    | Number n -> Result.Ok n
+
+  let get_actual_depth action wide depth =
+    if not (wide_allowed action) && not (depth_is_blank depth)
+      then Result.Error "action cannot have depth modifier"
+    else if not (wide_allowed action) && wide
+      then Result.Error "action cannot be wide"
+    else if depth_is_range depth && not wide
+      then Result.Error "specifying a range requires w"
+    else match depth with
+      | Range (start, end_) ->
+        if start = 0 || end_ = 0 then Result.Error "invalid layer 0"
+        else if start > end_ then Result.Error "start of range must not be more than end"
+        else Result.Ok (Range (start-1, end_-1))
+      | Layer layer ->
+        if layer = 0 then Result.Error "invalid layer 0"
+        else Result.Ok (Range (layer-1, layer-1))
+      | BlankDepth ->
+        Result.Ok (Range (0, 0))
+
+  let process_lex_output Lexical_analysis.{depth; action; wide; repeat; inverse} =
+    let open Result in
+    let* repeat = get_repeat_number repeat in
+    let* new_depth = get_actual_depth action wide depth in
+    Result.Ok {depth=new_depth; action; repeat; inverse}
+end
+
+let move_of_string s =
+  let open Result in
+  Angstrom.parse_string ~consume:Angstrom.Consume.Prefix Lexical_analysis.parse_move s
+  >>= Semantic_analysis.process_lex_output
