@@ -1,6 +1,8 @@
+(include_subdirs unqualified)
+
 (executable
   (name main)
-  (libraries core curses)
+  (libraries core curses angstrom)
   (preprocess (pps ppx_jane
     -allow-unannotated-ignores
     ))
